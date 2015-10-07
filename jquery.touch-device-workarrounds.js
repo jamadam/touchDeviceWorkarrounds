@@ -49,7 +49,7 @@
      */
     Class.prototype.emulatePositionFixedModalWithAbsolute = function(enable) {
         var modal = this.elem;
-        var cont = modal.parents(1);
+        var cont = modal.parent().get(0);
         if (enable) {
             if (modal.css("position") !== "fixed") {
                 return;
@@ -57,20 +57,28 @@
             var pdata = {
                 originalPosX: $(window).scrollLeft(),
                 originalPosY: $(window).scrollTop(),
-                originalStyle: cont.attr('style') || ""
+                originalWidth: cont.style.width,
+                originalHeight: cont.style.height,
+                originalOverflow: cont.style.overflow,
             };
             modal.data(plugname)[1] = pdata;
-            cont.css({height:window.innerHeight + 'px', overflow:'hidden'});
+            cont.style.width = '1px';
+            cont.style.height = '1px';
+            cont.style.overflow = 'hidden';
             window.scrollTo(0, 0);
-            cont.get(0).scrollTop = pdata.originalPosY;
-            cont.get(0).scrollLeft = pdata.originalPosX;
+            var gWRO = getWindowRelativeOffset(window, cont);
+            cont.style.height = (window.innerHeight - gWRO.top) + 'px';
+            cont.style.width = (window.innerWidth - gWRO.left) + 'px';
+            cont.scrollTop = pdata.originalPosY;
+            cont.scrollLeft = pdata.originalPosX;
         } else {
             var pdata = modal.data(plugname)[1];
-            cont.attr('style', pdata.originalStyle);
+            cont.style.width = pdata.originalWidth;
+            cont.style.height = pdata.originalHeight;
+            cont.style.overflow = pdata.originalOverflow;
             window.scrollTo(pdata.originalPosX, pdata.originalPosY);
             modal.data(plugname)[1] = {};
         }
-        $(window).trigger('scroll');
         
         return modal;
     };
@@ -110,6 +118,25 @@
         }
         
         return modal;
+    };
+    
+    /**
+     * Calcurate actual element position in display
+     * 
+     * @see http://stackoverflow.com/questions/3714628/jquery-get-the-location-of-an-element-relative-to-window
+     */
+    function getWindowRelativeOffset(win, elem) {
+        var offset = {
+            left: elem.getBoundingClientRect().left,
+            top: elem.getBoundingClientRect().top
+        };
+        var win1 = elem.ownerDocument.defaultView || elem.ownerDocument.window;
+        while (win1 != win) {
+            offset.left = offset.left + win1.frameElement.getBoundingClientRect().left;
+            offset.top = offset.top + win1.frameElement.getBoundingClientRect().top;
+            win1 = win1.parent;
+        }
+        return offset;
     };
     
     /**
