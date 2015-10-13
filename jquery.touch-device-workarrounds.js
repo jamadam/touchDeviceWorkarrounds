@@ -107,6 +107,15 @@
                     }
                 }
             });
+            // makes sure touchmove not to be propagated when partial scroll hit the end on Android.
+            modal.on('touchmove.' + ns, function (e) {
+                if (raw.scrollTop === 0 ||
+                    raw.scrollHeight === raw.scrollTop + raw.offsetHeight) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return false;
+                }
+            });
             // Prevent default unless original target is drawer
             body.on('touchmove.' + ns, function (e) {
                 if (!modal.has($(e.target)).length) {
@@ -114,6 +123,7 @@
                 }
             });
         } else {
+            modal.off('touchmove.' + ns);
             body.off('touchmove.' + ns);
             body.off('touchstart.' + ns);
         }
