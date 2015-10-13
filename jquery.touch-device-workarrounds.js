@@ -188,6 +188,12 @@
                     return true;
                 }
             }
+            if (ua.match(/Android/) && ua.match(/Chrome/)) {
+                var appleWebkitVersion = parseInt(ua.match(/AppleWebKit\/(\d+)/)[1]);
+                if (appleWebkitVersion === 537) {
+                    return true;
+                }
+            }
             return false;
         }
     };
