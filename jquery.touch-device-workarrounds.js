@@ -3,7 +3,8 @@
  *
  * SYNOPSIS
  *
- * if ($.touchDeviceWorkarrounds.isTargetDevice()) {
+ *  if ($.touchDeviceWorkarrounds.isTouchDevice() &&
+ *                                  $.touchDeviceWorkarrounds.isTargetUA()) {
  *     var tdw = $(".modal").touchDeviceWorkarrounds();
  *     $(".modalOpener").on('click', function(){
  *         ...open modal
@@ -157,9 +158,27 @@
      * Class methods
      */
     $[plugname] = {
-        isTargetDevice: function(){
-            return navigator.platform == 'iPad' || navigator.platform == 'iPhone' ||
-                navigator.platform == 'iPod' || !!navigator.userAgent.match('Mobile Safari');
+        
+        /**
+         * Detect touch device
+         */
+        isTouchDevice: function() {
+          return 'ontouchstart' in window // works on most browsers 
+              || 'onmsgesturechange' in window; // works on ie10
+        },
+        
+        /**
+         * Target devices for the workarrounds
+         */
+        isTargetUA: function(ua){
+            ua = ua || navigator.userAgent;
+            if (ua.match(/AppleWebKit/)) {
+                var appleWebkitVersion = parseInt(ua.match(/AppleWebKit\/(\d+)/)[1]);
+                if (appleWebkitVersion >= 600 && appleWebkitVersion <= 601) {
+                    return true;
+                }
+            }
+            return false;
         }
     };
 })(jQuery);
